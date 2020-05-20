@@ -1,7 +1,7 @@
 db = {
     'host' : 'localhost',
-    'user' : 'user',
-    'passwd' : 'pass',
+    'user' : 'root',
+    'passwd' : '@st016de',
     'database' : 'asteriskcdr',
     'db_manutencao' : 'manutencao'
 }
