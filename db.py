@@ -19,6 +19,15 @@ class mysql_conn():
     self.cursor.execute(query)
     return self.cursor
 
+  def set_db(self, database):
+    self.db_connection = mysql.connector.connect(
+      host=db['host'], 
+      user=db['user'], 
+      passwd=db['passwd'], 
+      database=database
+    )
+    self.cursor = self.db_connection.cursor()  
+
   def disconnect(self):
     self.cursor.close()
     self.db_connection.commit()

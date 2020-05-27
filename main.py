@@ -146,6 +146,39 @@ for (calldate, src, dst, channel, dstchannel, lastapp, billsec, disposition, acc
         queue
     )
 
+## Dados de filas
+my_conn.set_db('fila')
+fields = "queuename, event, parameter1, parameter2, parameter3, parameter4"
+query = "SELECT {} FROM queue WHERE periodo like '{}%'".format(fields, data_query)
+events = my_conn.query(query)
+queues_dict = {}
+
+for (queuename, event, parameter1, parameter2, parameter3, parameter4) in events:
+    if queuename != 'NONE':
+
+        if queuename not in queues_dict:
+            queues_dict[queuename] = {
+                'atendidas' : 0,
+                'transferidas' : 0,
+                'abandonadas' : 0,
+                'tempo_espera' : 0,
+                'tempo_conversacao' : 0,
+                'tempo_abandono' : 0
+            }
+        
+        if event == "COMPLETEAGENT" or event == "COMPLETECALLER":
+            queues_dict[queuename]['atendidas'] += 1
+            queues_dict[queuename]['tempo_espera'] += int(parameter1)
+            queues_dict[queuename]['tempo_conversacao'] += int(parameter2)
+
+        elif event == "TRANSFER":
+            queues_dict[queuename]['transferidas'] += 1
+            queues_dict[queuename]['tempo_espera'] += int(parameter3)
+        
+        elif event == "ABANDON":
+            queues_dict[queuename]['abandonadas'] += 1
+            queues_dict[queuename]['tempo_abandono'] += int(parameter3)
+
 my_conn.disconnect()
 
 #Criando arquivo consolidado
@@ -176,6 +209,24 @@ for extensao in consolidado:
             perdidas,
             perdidas_porcentagem        
         )
+
+resumo_calls += "\n\n\n\n"
+resumo_calls += "Fila; Chamadas atendidas (un); Espera Média (seg); Conversação Média (seg); Transferidas (un); Abandonadas(un); Abandono Médio (seg) \n"
+
+for queue in queues_dict:
+    espera_media = queues_dict[queue]['tempo_espera'] / (queues_dict[queue]['atendidas'] + queues_dict[queue]['transferidas'])
+    conversacao_media = queues_dict[queue]['tempo_conversacao'] / queues_dict[queue]['atendidas']
+    abandono_medio = queues_dict[queue]['tempo_abandono'] / queues_dict[queue]['abandonadas'] 
+    resumo_calls += "{};{};{};{};{};{};{} \n".format(
+        queue,
+        queues_dict[queue]['atendidas'],
+        round(espera_media),
+        round(conversacao_media),
+        queues_dict[queue]['transferidas'],
+        queues_dict[queue]['abandonadas'],
+        round(abandono_medio)
+    )
+
 
 filename = '{}total/arq-{}.csv'.format(path, data_query)
 with open(filename, 'w') as arquivo:
