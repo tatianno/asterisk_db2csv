@@ -214,9 +214,21 @@ resumo_calls += "\n\n\n\n"
 resumo_calls += "Fila; Chamadas atendidas (un); Espera Média (seg); Conversação Média (seg); Transferidas (un); Abandonadas(un); Abandono Médio (seg) \n"
 
 for queue in queues_dict:
-    espera_media = queues_dict[queue]['tempo_espera'] / (queues_dict[queue]['atendidas'] + queues_dict[queue]['transferidas'])
-    conversacao_media = queues_dict[queue]['tempo_conversacao'] / queues_dict[queue]['atendidas']
-    abandono_medio = queues_dict[queue]['tempo_abandono'] / queues_dict[queue]['abandonadas'] 
+    if queues_dict[queue]['atendidas'] != 0 or queues_dict[queue]['transferidas'] != 0:
+        espera_media = queues_dict[queue]['tempo_espera'] / (queues_dict[queue]['atendidas'] + queues_dict[queue]['transferidas'])
+    else:
+        espera_media = 0
+
+    if queues_dict[queue]['atendidas']:
+        conversacao_media = queues_dict[queue]['tempo_conversacao'] / queues_dict[queue]['atendidas']
+    else:
+        conversacao_media = 0
+
+    if  queues_dict[queue]['abandonadas']: 
+        abandono_medio = queues_dict[queue]['tempo_abandono'] / queues_dict[queue]['abandonadas'] 
+    else:
+        abandono_medio = 0
+        
     resumo_calls += "{};{};{};{};{};{};{} \n".format(
         queue,
         queues_dict[queue]['atendidas'],
