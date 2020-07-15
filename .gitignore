@@ -1,1 +1,4 @@
 settings.py
+csv/
+__pycache__/
+functions/__pycache__/
